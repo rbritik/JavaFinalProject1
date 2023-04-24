@@ -3,8 +3,8 @@ import java.sql.*;
 public class QuestionDAO {
 
     // Database credentials
-    final String username = "ritik";
-    final String password = "Tz2@5c9tyo"; 
+    final String username = "yourusername";
+    final String password = "passwd"; 
 
     public void addQuestion(Question question) {
         Connection conn = null;
