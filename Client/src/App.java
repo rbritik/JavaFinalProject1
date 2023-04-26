@@ -9,7 +9,7 @@ public class App extends JFrame implements ActionListener{
     JTextField tf1;
     JPasswordField pf2;
     JButton b1, b2;
-
+    Socket skt;
     App() {
         setTitle("Login Form");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -77,6 +77,7 @@ public class App extends JFrame implements ActionListener{
 
         b1.addActionListener(this);
         b2.addActionListener(this);
+        connectToServer();
     }
 
     public void actionPerformed(ActionEvent ae) {
@@ -84,12 +85,12 @@ public class App extends JFrame implements ActionListener{
             dispose();
             System.exit(0);
         }
-        String uname = tf1.getText();
-        String pass = new String(pf2.getPassword());
 
-        if (uname.equals("admin") && pass.equals("admin123")) {
+        if (validatePass(tf1.getText(),pf2.getPassword())){
             try {
-                connectToServer();
+               
+                DataExchange();
+               
             } catch (Exception e) {
                 System.out.println(e);
             }
@@ -101,6 +102,41 @@ public class App extends JFrame implements ActionListener{
         }
     }
 
+    private boolean validatePass(String username,char[] pass){
+
+       try {
+            if(username.equals("") || pass.length == 0)
+                return false;
+            
+            String password = new String(pass);
+            String details = username+","+password;
+            PrintWriter output = new PrintWriter(skt.getOutputStream(),true);
+            output.println(details);
+            BufferedReader input = new BufferedReader(new InputStreamReader(skt.getInputStream()));
+        
+            String check = input.readLine();
+            System.out.println(check);
+            if(check.equals("Correct"))
+                return true;
+            else
+                return false;
+       } catch (Exception e) {
+        System.out.println(e);
+       }
+       return false;
+    }
+private void DataExchange(){
+
+    try {
+        ObjectInputStream input = new ObjectInputStream(skt.getInputStream());
+        ArrayList<Question> ques = (ArrayList<Question>)input.readObject();
+        QuestionClient qc = new QuestionClient(ques);
+        qc.setVisible(true);
+        dispose();
+    } catch (Exception e) {
+        System.out.println(e);
+    }
+}
 private JDialog waitingForServer(){
     JDialog waitingDialog = new JDialog(this, "Waiting for server to connect...", false);
     waitingDialog.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
@@ -120,24 +156,25 @@ private JDialog waitingForServer(){
     return waitingDialog;
 }
     
-    void connectToServer(){
+void connectToServer(){
         
           
         JDialog waitingDialog = waitingForServer();  
         System.out.println("Waiting for server");
         try {
+
             waitingDialog.setVisible(true);
-            Socket skt = new Socket("192.168.168.230",4444);
+            skt = new Socket("192.168.128.230",4444);
             waitingDialog.dispose();
+            JOptionPane.showMessageDialog(this,"Connection Established..", "Done",JOptionPane.INFORMATION_MESSAGE);
             System.out.println("Connected to Server");
-            ObjectInputStream input = new ObjectInputStream(skt.getInputStream());
-            ArrayList<Question> ques = (ArrayList<Question>)input.readObject();
-            QuestionClient qc = new QuestionClient(ques);
-            qc.setVisible(true);
-            dispose();
-        } catch (ConnectException e) {
+            
+        }
+        catch(ConnectException e){
+
             waitingDialog.dispose();
             JOptionPane.showMessageDialog(this, "Connection timeout....Server didn't respond.", "Error", JOptionPane.ERROR_MESSAGE);
+
         }
         catch(Exception e){
             System.out.println(e);
