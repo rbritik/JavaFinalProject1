@@ -10,7 +10,7 @@ public class App {
     public static void main(String[] args) throws IOException, SQLException, ClassNotFoundException {
         // Establish database connection
         Class.forName("com.mysql.cj.jdbc.Driver");
-        Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/onlineexam", "ritik", "Tz2@5c9tyo");
+        Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/onlineexam", "####", "@@@@@");
         
         // Fetch questions from database and store in array of objects
         String sql = "SELECT * FROM Question";
