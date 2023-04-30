@@ -1,82 +1,112 @@
 import javax.swing.*;
+import javax.swing.border.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.net.*;
+import java.awt.geom.*;
 import java.util.ArrayList;
+
+
 public class App extends JFrame implements ActionListener{
     JLabel l1, l2, l3;
     JTextField tf1;
     JPasswordField pf2;
     JButton b1, b2;
     Socket skt;
-    App() {
+    private JPanel contentPane;
+    App() throws IOException{
         setTitle("Login Form");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(560, 300);
-        setResizable(false);
-       
-        // Create a panel to hold the components
-        JPanel panel = new JPanel();
-        panel.setBackground(Color.lightGray);
-        panel.setLayout(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 5, 5, 5);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
+
+        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        GraphicsDevice[] gs = ge.getScreenDevices();
+
+
+        // Get size of each screen
+        int screenWidth = 0;
+        int screenHeight = 0;
+
+        // Get size of each screen
+        for (int i=0; i<gs.length; i++) {
+            DisplayMode dm = gs[i].getDisplayMode();
+            screenWidth = dm.getWidth();
+            screenHeight += Math.max(screenHeight, dm.getHeight());
+        }
+
+
+        setLayout(null);
+
+        ImageIcon imageIcon = new ImageIcon("");
+              // Create a layered pane to hold the components
+        JLayeredPane layeredPane = new JLayeredPane();
+        setContentPane(layeredPane);
+
+        // Add the image to the background
+        JLabel backgroundLabel = new JLabel(imageIcon);
+        backgroundLabel.setBounds(0, 0, screenWidth, screenHeight);
+        layeredPane.add(backgroundLabel, JLayeredPane.DEFAULT_LAYER);
+
 
         // Add the components to the panel
-        l1 = new JLabel("Login Form");
-        l1.setForeground(Color.blue);
-        l1.setFont(new Font("Serif", Font.ROMAN_BASELINE, 20));
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.gridwidth = 2;
-        panel.add(l1, gbc);
-
+        Font font = new Font("Arial", Font.ITALIC, 30); // create a new font object
+        
+        JLabel onlineExam = new JLabel("Online Exam");
+        onlineExam.setFont(new Font("Arial",Font.HANGING_BASELINE, 150));
+        onlineExam.setForeground(Color.BLUE);
+        onlineExam.setBounds(540,140,1000, 150);
+        layeredPane.add(onlineExam,JLayeredPane.PALETTE_LAYER);
+        font = new Font("Arial", Font.BOLD, 25);
         l2 = new JLabel("Username:");
-        l2.setFont(new Font("Arial", Font.BOLD, 25));
-        gbc.gridx = 0;
-        gbc.gridy = 1;
-        gbc.gridwidth = 1;
-        panel.add(l2, gbc);
+        l2.setForeground(Color.BLACK);
+        l2.setFont(font);
+        l2.setBounds(800,400, 200, 50);
+        layeredPane.add(l2, JLayeredPane.PALETTE_LAYER);
 
         tf1 = new JTextField(20);
-        gbc.gridx = 1;
-        gbc.gridy = 1;
-        gbc.gridwidth = 1;
-        panel.add(tf1, gbc);
+        tf1.setForeground(Color.BLUE);
+        tf1.setBounds(950, 400, 200, 50);
+        tf1.setFont(font);
+        // Set shape to oval
+        tf1.setBorder(new RoundBorder(10));
+        layeredPane.add(tf1, JLayeredPane.PALETTE_LAYER);
 
         l3 = new JLabel("Password:");
+        l3.setForeground(Color.BLACK);
         l3.setFont(new Font("Arial", Font.BOLD, 25));
-        gbc.gridx = 0;
-        gbc.gridy = 2;
-        gbc.gridwidth = 1;
-        panel.add(l3, gbc);
+        l3.setBounds(800, 500, 200, 50);
+        layeredPane.add(l3, JLayeredPane.PALETTE_LAYER);
 
         pf2 = new JPasswordField(20);
-        gbc.gridx = 1;
-        gbc.gridy = 2;
-        gbc.gridwidth = 1;
-        panel.add(pf2, gbc);
+        pf2.setBounds(950, 500, 200, 50);
+        pf2.setForeground(Color.BLUE);
+        pf2.setFont(font);
+        // Set shape to oval
+        pf2.setBorder(new RoundBorder(10));
+        layeredPane.add(pf2, JLayeredPane.PALETTE_LAYER);
 
         b1 = new JButton("Login");
-        gbc.gridx = 0;
-        gbc.gridy = 3;
-        gbc.gridwidth = 1;
-        panel.add(b1, gbc);
+        b1.setBounds(890, 600, 80, 40);
+        font = new Font("Arial", Font.BOLD, 17);
+        b1.setFont(font);
+        b1.setBorder(new RoundBorder(10));
+        layeredPane.add(b1, JLayeredPane.PALETTE_LAYER);
 
         b2 = new JButton("Cancel");
-        gbc.gridx = 1;
-        gbc.gridy = 3;
-        gbc.gridwidth = 1;
-        panel.add(b2, gbc);
+        b2.setBounds(990, 600, 80, 40);
+        b2.setFont(font);
+        b2.setBorder(new RoundBorder(10));
+        layeredPane.add(b2, JLayeredPane.PALETTE_LAYER);
 
-        // Add the panel to the frame
-        getContentPane().add(panel);
 
-        setVisible(true);
-
+        // Add action Listener
         b1.addActionListener(this);
         b2.addActionListener(this);
+        setLocationRelativeTo(null);
+
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(screenWidth, screenHeight);
+        setVisible(true);
         connectToServer();
     }
 
@@ -85,7 +115,6 @@ public class App extends JFrame implements ActionListener{
             dispose();
             System.exit(0);
         }
-
         if (validatePass(tf1.getText(),pf2.getPassword())){
             try {
                
@@ -130,7 +159,7 @@ private void DataExchange(){
     try {
         ObjectInputStream input = new ObjectInputStream(skt.getInputStream());
         ArrayList<Question> ques = (ArrayList<Question>)input.readObject();
-        QuestionClient qc = new QuestionClient(ques);
+        QuestionClient qc = new QuestionClient(ques,skt);
         qc.setVisible(true);
         dispose();
     } catch (Exception e) {
@@ -185,3 +214,4 @@ void connectToServer(){
         new App();
     }
 }
+
