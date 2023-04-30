@@ -353,6 +353,8 @@ public void showResult(){
         update.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e){
 
+                score = 0;
+                attemptCount = 0;
                 showResult();
 
             }
